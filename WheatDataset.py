@@ -14,9 +14,11 @@ import torch.nn as nn
 from torch.utils.data import Dataset,DataLoader
 from torchvision import transforms,models
 from tqdm import tqdm_notebook as tqdm
-from utils import *
+# from utils import *
 import warnings
 warnings.filterwarnings('ignore')
+
+TRAIN_ROOT_PATH = 'data/train'
 
 class WheatDataset(Dataset):
     def __init__(self, image_ids, markings=None, dim=256, transforms=None):
@@ -28,12 +30,13 @@ class WheatDataset(Dataset):
         
     def __getitem__(self, idx):
         image_id = self.image_ids[idx]
-        image = cv2.imread(image_id, cv2.IMREAD_COLOR)
+        # image = cv2.imread(image_id, cv2.IMREAD_COLOR)
+        image = cv2.imread(f'{TRAIN_ROOT_PATH}/{image_id}.jpg', cv2.IMREAD_COLOR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = cv2.resize(image, (self.dim, self.dim))
         image = image.astype(np.float32) / 255.0
 
-        records = self.marking[self.marking['image_id'] == image_id]
+        records = self.markings[self.markings['image_id'] == image_id]
         boxes = records[['x', 'y', 'w', 'h']].values
         boxes[:, 2] = boxes[:, 0] + boxes[:, 2]
         boxes[:, 3] = boxes[:, 1] + boxes[:, 3]
