@@ -13,5 +13,3 @@ def get_net():
     config.image_size = 512
     net.class_net = HeadNet(config, num_outputs=config.num_classes, norm_kwargs=dict(eps=.001, momentum=.01))
     return DetBenchTrain(net, config)
-
-net = get_net()

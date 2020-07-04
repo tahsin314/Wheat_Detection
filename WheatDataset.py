@@ -58,7 +58,11 @@ class WheatDataset(Dataset):
                 if len(sample['bboxes']) > 0:
                     image = sample['image']
                     target['boxes'] = torch.stack(tuple(map(torch.tensor, zip(*sample['bboxes'])))).permute(1, 0)
-                    target['boxes'][:,[0,1,2,3]] = target['boxes'][:,[1,0,3,2]]  #yxyx: be warning
+                    # print(target['boxes'].size())
+                    #yxyx: be warning
+                    target['boxes'][:,[0,1,2,3]] = target['boxes'][:,[1,0,3,2]]  
+                    target['labels'] = torch.stack(sample['labels']) # <--- add this!
+                    # print(target['labels'].size())
                     break
         return image, target, image_id
 
