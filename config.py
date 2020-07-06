@@ -21,7 +21,7 @@ SEED = 24
 batch_size = 8
 num_workers = 4
 sz = 512
-learning_rate = 2e-3
+learning_rate = 1e-3
 patience = 4
 accum_step = 48 // batch_size
 opts = ['normal', 'mixup', 'cutmix']
@@ -34,6 +34,7 @@ model_dir = 'model_dir'
 history_dir = 'history_dir'
 load_model = True
 
+os.makedirs(model_dir, exist_ok=True)
 if load_model and os.path.exists(os.path.join(history_dir, 'history_{}.csv'.format(model_name))):
     history = pd.read_csv(os.path.join(history_dir, 'history_{}.csv'.format(model_name)))
 else:

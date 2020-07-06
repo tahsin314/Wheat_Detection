@@ -6,6 +6,8 @@ from apex import amp
 from config import *
 from utils_train import collate_fn
 
+best_val_loss = 1e20
+
 train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -70,10 +72,20 @@ def train_val(dataloader, train=True):
 for i in range(n_epochs):
     train_loss = train_val(train_loader, True)
     torch.cuda.empty_cache()
-    gc.collect()
+    print(gc.collect(), end='\r')
     print(f'Epoch: {(i+1)/n_epochs} Phase: Train Loss: {train_loss:.4f}')
     val_loss = train_val(val_loader, False)
     print(f'Epoch: {(i+1)/n_epochs} Phase: Val Loss: {val_loss:.4f}')
+    if val_loss < best_val_loss:
+        print(f"Val loss improved from {best_val_loss:.4f} to {val_loss:.4f}")
+        best_val_loss = val_loss
+        print('Saving model ...')
+        torch.save({
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'best_loss': best_val_loss,
+            'Epoch': i
+        }, f'{model_dir}/{model_name}.pth')
 
 
 
