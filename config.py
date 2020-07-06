@@ -58,7 +58,7 @@ train_aug = A.Compose(
             A.ToGray(p=0.01),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
-            A.Resize(height=512, width=512, p=1),
+            A.Resize(height=sz, width=sz, p=1),
             A.Cutout(num_holes=8, max_h_size=64, max_w_size=64, fill_value=0, p=0.5),
             ToTensorV2(p=1.0, always_apply=True),
         ], 

@@ -39,31 +39,32 @@ def train_val(dataloader, train=True):
     else:
         model.eval()
         print("Initiating val phase ...")
-    for step, (images, targets, image_ids) in enumerate(dataloader):
-        images = torch.stack(images)
-        images = images.to(device).float()
-        batch_size = images.shape[0]
-        boxes = [target['boxes'].to(device).float() for target in targets]
-        labels = [target['labels'].to(device).float() for target in targets]
-        optimizer.zero_grad()
-        
-        loss, _, _ = model(images, boxes, labels)
-        running_loss += loss.sum().data.cpu().numpy()
-        epoch_samples += images.size(0)
-        
-        if train:
-            if apex:
-                with amp.scale_loss(loss, optimizer) as scaled_loss:
-                    scaled_loss.backward()
-            else:
-                loss.backward()
-            optimizer.step()
+    with torch.set_grad_enabled(train):
+        for step, (images, targets, image_ids) in enumerate(dataloader):
+            images = torch.stack(images)
+            images = images.to(device).float()
+            batch_size = images.shape[0]
+            boxes = [target['boxes'].to(device).float() for target in targets]
+            labels = [target['labels'].to(device).float() for target in targets]
             optimizer.zero_grad()
-        
-        elapsed = int(time.time() - t1)
-        eta = int(elapsed / (step+1) * (len(dataloader)-(step+1)))
-        msg = f"Progress: [{step}/{len(dataloader)}] loss: {(running_loss/epoch_samples):.4f} Time: {elapsed}s ETA: {eta} s"
-        print(msg, end='\r')
+            
+            loss, _, _ = model(images, boxes, labels)
+            running_loss += loss.sum().data.cpu().numpy()
+            epoch_samples += images.size(0)
+            
+            if train:
+                if apex:
+                    with amp.scale_loss(loss, optimizer) as scaled_loss:
+                        scaled_loss.backward()
+                else:
+                    loss.backward()
+                optimizer.step()
+                optimizer.zero_grad()
+            
+            elapsed = int(time.time() - t1)
+            eta = int(elapsed / (step+1) * (len(dataloader)-(step+1)))
+            msg = f"Progress: [{step}/{len(dataloader)}] loss: {(running_loss/epoch_samples):.4f} Time: {elapsed}s ETA: {eta} s"
+            print(msg, end='\r')
     return running_loss/epoch_samples
 
 for i in range(n_epochs):
