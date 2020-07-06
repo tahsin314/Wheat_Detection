@@ -4,6 +4,7 @@ My scripts for the [Global Wheat Detection](https://www.kaggle.com/c/global-whea
 
 ### Tasks
 - `load_cutmix_image_and_boxes` feature has to be added from the EffDet kernel
+- Add `IoU` metric and `IoU` loss.
 
 ### Might be useful
 - [End to End Object Detection with Transformers:DETR](https://www.kaggle.com/tanulsingh077/end-to-end-object-detection-with-transformers-detr)
