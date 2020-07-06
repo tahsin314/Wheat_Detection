@@ -110,7 +110,7 @@ train_df = df_folds[df_folds['fold'] != fold_number]
 val_df = df_folds[df_folds['fold'] == fold_number]
 device = "cuda:0"
 model = EffDet(pretrained_model).to(device)
-optimizer = torch.optim.AdamW(model.parameters(), lr=learnig_rate)
+optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 train_dataset = WheatDataset(train_df.index.values, markings=marking, dim=1024, transforms=train_aug)
 val_dataset = WheatDataset(image_ids=val_df.index.values, markings=marking, dim=1024,            transforms=val_aug,
     phase='val',
