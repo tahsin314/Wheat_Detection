@@ -87,9 +87,9 @@ for i in range(start_epoch, n_epochs):
     torch.cuda.empty_cache()
     gc.collect()
     sys.stdout = sys.__stdout__
-    print(f'Epoch: {(i+1):02d}/{n_epochs:02d} Phase: Train Loss: {train_loss:.4f}')
+    print(f'Epoch: [{(i+1):02d}/{n_epochs:02d}] Phase: Train Loss: {train_loss:.4f}')
     val_loss = train_val(val_loader, False)
-    print(f'Epoch: {(i+1):02d}/{n_epochs:02d} Phase: Val Loss: {val_loss:.4f}')
+    print(f'Epoch: [{(i+1):02d}/{n_epochs:02d}] Phase: Val Loss: {val_loss:.4f}')
     if val_loss < best_val_loss:
         print(f"Val loss improved from {best_val_loss:.4f} to {val_loss:.4f}")
         best_val_loss = val_loss
