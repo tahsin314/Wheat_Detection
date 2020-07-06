@@ -5,20 +5,21 @@ import cv2
 import pandas as pd
 import torch
 from torch import optim
+from WheatDataset import WheatDataset
 from augmentations.augmix import RandomAugMix
 from augmentations.gridmask import GridMask
 from augmentations.hair import Hair, AdvancedHairAugmentationAlbumentations
 from augmentations.microscope import MicroscopeAlbumentations
 from losses.arcface import ArcFaceLoss
 from losses.focal import criterion_margin_focal_binary_cross_entropy
-# from model.seresnext import seresnext
-# from model.effnet import EffNet, EffNet_ArcFace
+from models.EffDet import EffDet
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 n_fold = 5
 fold = 0
 SEED = 24
-batch_size = 16
+batch_size = 8
+num_workers = 4
 sz = 512
 learning_rate = 2e-3
 patience = 4
@@ -27,8 +28,8 @@ opts = ['normal', 'mixup', 'cutmix']
 choice_weights = [0.8, 0.1, 0.1]
 device = 'cuda:0'
 apex = True
-pretrained_model = 'efficientnet-b5'
-model_name = '{}_trial_stage1_fold_{}'.format(pretrained_model, fold)
+pretrained_model = 'tf_efficientdet_d5'
+model_name = f'{pretrained_model}_fold_{fold}'
 model_dir = 'model_dir'
 history_dir = 'history_dir'
 load_model = True
@@ -105,4 +106,12 @@ df_folds.loc[:, 'fold'] = 0
 
 for fold_number, (train_index, val_index) in enumerate(skf.split(X=df_folds.index, y=df_folds['stratify_group'])):
     df_folds.loc[df_folds.iloc[val_index].index, 'fold'] = fold_number
-
+train_df = df_folds[df_folds['fold'] != fold_number]
+val_df = df_folds[df_folds['fold'] == fold_number]
+device = "cuda:0"
+model = EffDet(pretrained_model).to(device)
+optimizer = torch.optim.AdamW(model.parameters(), lr=learnig_rate)
+train_dataset = WheatDataset(train_df.index.values, markings=marking, dim=1024, transforms=train_aug)
+val_dataset = WheatDataset(image_ids=val_df.index.values, markings=marking, dim=1024,            transforms=val_aug,
+    phase='val',
+)

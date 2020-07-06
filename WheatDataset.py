@@ -21,7 +21,7 @@ warnings.filterwarnings('ignore')
 TRAIN_ROOT_PATH = 'data/train'
 
 class WheatDataset(Dataset):
-    def __init__(self, image_ids, markings=None, dim=256, transforms=None):
+    def __init__(self, image_ids, markings=None, dim=256, transforms=None, phase='train'):
         super().__init__()
         self.image_ids = image_ids
         self.markings = markings
@@ -30,10 +30,9 @@ class WheatDataset(Dataset):
         
     def __getitem__(self, idx):
         image_id = self.image_ids[idx]
-        # image = cv2.imread(image_id, cv2.IMREAD_COLOR)
         image = cv2.imread(f'{TRAIN_ROOT_PATH}/{image_id}.jpg', cv2.IMREAD_COLOR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image, (self.dim, self.dim))
+        # image = cv2.resize(image, (self.dim, self.dim))
         image = image.astype(np.float32) / 255.0
 
         records = self.markings[self.markings['image_id'] == image_id]
@@ -58,11 +57,9 @@ class WheatDataset(Dataset):
                 if len(sample['bboxes']) > 0:
                     image = sample['image']
                     target['boxes'] = torch.stack(tuple(map(torch.tensor, zip(*sample['bboxes'])))).permute(1, 0)
-                    # print(target['boxes'].size())
                     #yxyx: be warning
                     target['boxes'][:,[0,1,2,3]] = target['boxes'][:,[1,0,3,2]]  
                     target['labels'] = torch.stack(sample['labels']) # <--- add this!
-                    # print(target['labels'].size())
                     break
         return image, target, image_id
 

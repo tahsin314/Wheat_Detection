@@ -4,8 +4,8 @@ sys.path.insert(0, '../omegaconf')
 from effdet import get_efficientdet_config, EfficientDet, DetBenchTrain
 from effdet.efficientdet import HeadNet
 
-def get_net():
-    config = get_efficientdet_config('tf_efficientdet_d5')
+def EffDet(pretrained_model='tf_efficientdet_d5'):
+    config = get_efficientdet_config(pretrained_model)
     net = EfficientDet(config, pretrained_backbone=True)
     # checkpoint = torch.load('../input/efficientdet/efficientdet_d5-ef44aea8.pth')
     # net.load_state_dict(checkpoint)
