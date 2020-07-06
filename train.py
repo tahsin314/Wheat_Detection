@@ -1,3 +1,5 @@
+import os
+import sys
 import time
 import gc
 import torch
@@ -6,7 +8,17 @@ from apex import amp
 from config import *
 from utils_train import collate_fn
 
+start_epoch = 0
 best_val_loss = 1e20
+
+if load_model:
+    tmp =  torch.load(f'{model_dir}/{model_name}.pth')
+    model.load_state_dict(tmp['model_state_dict'])
+    optimizer.load_state_dict(tmp['optimizer_state_dict'])
+    start_epoch = tmp['Epoch'] + 1
+    best_val_loss = tmp['best_loss']
+    del tmp
+    print('Model loaded')
 
 train_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -69,13 +81,15 @@ def train_val(dataloader, train=True):
             print(msg, end='\r')
     return running_loss/epoch_samples
 
-for i in range(n_epochs):
+for i in range(start_epoch, n_epochs):
     train_loss = train_val(train_loader, True)
+    sys.stdout = open(os.devnull, 'w')
     torch.cuda.empty_cache()
-    print(gc.collect(), end='\r')
-    print(f'Epoch: {(i+1)/n_epochs} Phase: Train Loss: {train_loss:.4f}')
+    gc.collect()
+    sys.stdout = sys.__stdout__
+    print(f'Epoch: {(i+1)/n_epochs:02d} Phase: Train Loss: {train_loss:.4f}')
     val_loss = train_val(val_loader, False)
-    print(f'Epoch: {(i+1)/n_epochs} Phase: Val Loss: {val_loss:.4f}')
+    print(f'Epoch: {(i+1)/n_epochs:02d} Phase: Val Loss: {val_loss:.4f}')
     if val_loss < best_val_loss:
         print(f"Val loss improved from {best_val_loss:.4f} to {val_loss:.4f}")
         best_val_loss = val_loss
