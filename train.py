@@ -13,7 +13,6 @@ best_val_loss = 1e20
 
 if load_model:
     tmp =  torch.load(f'{model_dir}/{model_name}.pth')
-    # torch.save(tmp['model_state_dict'], f'{model_dir}/{model_name}_weight.pth')
     model.load_state_dict(tmp['model_state_dict'])
     optimizer.load_state_dict(tmp['optimizer_state_dict'])
     start_epoch = tmp['Epoch'] + 1
@@ -73,8 +72,9 @@ def train_val(dataloader, train=True):
                         scaled_loss.backward()
                 else:
                     loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
+                if (step+1) % accum_step == 0:
+                    optimizer.step()
+                    optimizer.zero_grad()
             
             elapsed = int(time.time() - t1)
             eta = int(elapsed / (step+1) * (len(dataloader)-(step+1)))
