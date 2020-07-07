@@ -90,6 +90,7 @@ for i in range(start_epoch, n_epochs):
     sys.stdout = sys.__stdout__
     print(f'Epoch: [{(i+1):02d}/{n_epochs:02d}] Phase: Train Loss: {train_loss:.4f}')
     val_loss = train_val(val_loader, False)
+    lr_reduce_scheduler.step(val_loss)
     print(f'Epoch: [{(i+1):02d}/{n_epochs:02d}] Phase: Val Loss: {val_loss:.4f}')
     if val_loss < best_val_loss:
         print(f"Val loss improved from {best_val_loss:.4f} to {val_loss:.4f}")
@@ -98,9 +99,11 @@ for i in range(start_epoch, n_epochs):
         torch.save({
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
+            'lr_scheduler_state_dict':lr_reduce_scheduler.state_dict(),
             'best_loss': best_val_loss,
             'Epoch': i
         }, f'{model_dir}/{model_name}.pth')
+        
         torch.save({
             'model_state_dict': model.model.state_dict(),
         }, f'{model_dir}/{model_name}_weight.pth')

@@ -33,7 +33,7 @@ class WheatDataset(Dataset):
         image_id = self.image_ids[idx]
         if self.choice[0] == 'normal':
             image, boxes = load_image_and_boxes(TRAIN_ROOT_PATH, self.image_ids, idx, self.markings)
-            # print('normal', image.shape)
+
         elif self.choice[0] == 'cutmix':
             image, boxes = load_cutmix_image_and_boxes(TRAIN_ROOT_PATH, self.image_ids, idx, self.markings, self.dim)
         

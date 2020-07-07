@@ -114,6 +114,7 @@ val_df = df_folds[df_folds['fold'] == fold_number]
 device = "cuda:0"
 model = EffDet(pretrained_model).to(device)
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+lr_reduce_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=patience, verbose=True, threshold=1e-4, threshold_mode='rel', cooldown=0, min_lr=1e-7, eps=1e-08)
 train_dataset = WheatDataset(train_df.index.values, markings=marking, dim=1024, transforms=train_aug, opts= opts, choice_weights = choice_weights)
 val_dataset = WheatDataset(image_ids=val_df.index.values, markings=marking, dim=1024, transforms=val_aug, opts= ['normal'], choice_weights = [1.0],
     phase='val')
