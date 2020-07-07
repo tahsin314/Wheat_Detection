@@ -13,6 +13,7 @@ best_val_loss = 1e20
 
 if load_model:
     tmp =  torch.load(f'{model_dir}/{model_name}.pth')
+    # torch.save(tmp['model_state_dict'], f'{model_dir}/{model_name}_weight.pth')
     model.load_state_dict(tmp['model_state_dict'])
     optimizer.load_state_dict(tmp['optimizer_state_dict'])
     start_epoch = tmp['Epoch'] + 1
@@ -100,6 +101,9 @@ for i in range(start_epoch, n_epochs):
             'best_loss': best_val_loss,
             'Epoch': i
         }, f'{model_dir}/{model_name}.pth')
+        torch.save({
+            'model_state_dict': model.model.state_dict(),
+        }, f'{model_dir}/{model_name}_weight.pth')
 
 
 

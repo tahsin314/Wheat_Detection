@@ -2,12 +2,12 @@ import time
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import cv2
-import gc
-import matplotlib.pyplot as plt
 import torch.nn.functional as F
 import os
 os.environ['OPENCV_IO_MAX_IMAGE_PIXELS']=str(2**64)
 from random import choices
+from augmentations.augmentations import *
+from config import *
 # Any results you write to the current directory are saved as output.
 import torch
 import torch.nn as nn
@@ -21,25 +21,25 @@ warnings.filterwarnings('ignore')
 TRAIN_ROOT_PATH = 'data/train'
 
 class WheatDataset(Dataset):
-    def __init__(self, image_ids, markings=None, dim=256, transforms=None, phase='train'):
+    def __init__(self, image_ids, markings=None, dim=256, transforms=None, opts = ['normal', 'cutmix'], choice_weights = [0.5, 0.5],phase='train'):
         super().__init__()
         self.image_ids = image_ids
         self.markings = markings
         self.transforms = transforms
         self.dim = dim
+        self.choice = choices(opts, weights=choice_weights)
         
     def __getitem__(self, idx):
         image_id = self.image_ids[idx]
-        image = cv2.imread(f'{TRAIN_ROOT_PATH}/{image_id}.jpg', cv2.IMREAD_COLOR)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        # image = cv2.resize(image, (self.dim, self.dim))
-        image = image.astype(np.float32) / 255.0
-
-        records = self.markings[self.markings['image_id'] == image_id]
-        boxes = records[['x', 'y', 'w', 'h']].values
-        boxes[:, 2] = boxes[:, 0] + boxes[:, 2]
-        boxes[:, 3] = boxes[:, 1] + boxes[:, 3]
+        if self.choice[0] == 'normal':
+            image, boxes = load_image_and_boxes(TRAIN_ROOT_PATH, self.image_ids, idx, self.markings)
+            # print('normal', image.shape)
+        elif self.choice[0] == 'cutmix':
+            image, boxes = load_cutmix_image_and_boxes(TRAIN_ROOT_PATH, self.image_ids, idx, self.markings, self.dim)
         
+        elif self.choice[0] == 'mosaic':
+            image, boxes = load_mosaic_image_and_boxes(TRAIN_ROOT_PATH, self.image_ids, idx, self.markings)
+            
         labels = torch.ones((boxes.shape[0],), dtype=torch.int64)
         
         target = {}
