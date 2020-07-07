@@ -3,7 +3,6 @@
 My scripts for the [Global Wheat Detection](https://www.kaggle.com/c/global-wheat-detection/) competition.
 
 ### Tasks
-- `load_cutmix_image_and_boxes` feature has to be added from the EffDet kernel
 - Add `IoU` metric and `IoU` loss.
 
 ### Might be useful
