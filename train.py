@@ -70,8 +70,10 @@ def train_val(dataloader, train=True):
             if train:
                 if apex:
                     with amp.scale_loss(loss, optimizer) as scaled_loss:
+                        scaled_loss = scaled_loss / accum_step
                         scaled_loss.backward()
                 else:
+                    loss = loss / accum_step
                     loss.backward()
                 if (step+1) % accum_step == 0:
                     optimizer.step()

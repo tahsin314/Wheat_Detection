@@ -19,22 +19,22 @@ from albumentations.augmentations.transforms import RandomRain, RandomSnow, Rand
 from albumentations.pytorch.transforms import ToTensorV2
 n_fold = 5
 fold = 0
-SEED = 24
+SEED = 42
 batch_size = 2
 num_workers = 4
 sz = 768
-learning_rate = 1e-3
+learning_rate = 1.5e-3
 patience = 4
-accum_step = 20 // batch_size
+accum_step = 8 // batch_size
 opts = ['normal', 'cutmix', 'mosaic']
-choice_weights = [0.80, 0.20, 0.0]
+choice_weights = [0.75, 0.25, 0.0]
 device = 'cuda:0'
-apex = False 
+apex = True 
 pretrained_model = 'tf_efficientdet_d6'
 model_name = f'{pretrained_model}_fold_{fold}'
 model_dir = 'model_dir'
 history_dir = 'history_dir'
-load_model = False
+load_model = True
 
 os.makedirs(model_dir, exist_ok=True)
 if load_model and os.path.exists(os.path.join(history_dir, 'history_{}.csv'.format(model_name))):
@@ -98,7 +98,7 @@ bboxs = np.stack(marking['bbox'].apply(lambda x: np.fromstring(x[1:-1], sep=',')
 for i, column in enumerate(['x', 'y', 'w', 'h']):
     marking[column] = bboxs[:,i]
 marking.drop(columns=['bbox'], inplace=True)
-skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
 
 df_folds = marking[['image_id']].copy()
 df_folds.loc[:, 'bbox_count'] = 1
