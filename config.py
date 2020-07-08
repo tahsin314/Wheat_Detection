@@ -1,4 +1,7 @@
 import os
+import sys
+timm_efficientdet_path = '../timm_efficientdet_pytorch'
+omegaconf_path = '../omegaconf'
 import numpy as np 
 from sklearn.model_selection import StratifiedKFold
 import cv2
@@ -17,21 +20,21 @@ from albumentations.pytorch.transforms import ToTensorV2
 n_fold = 5
 fold = 0
 SEED = 24
-batch_size = 5
+batch_size = 2
 num_workers = 4
-sz = 512
+sz = 768
 learning_rate = 1e-3
 patience = 4
 accum_step = 20 // batch_size
 opts = ['normal', 'cutmix', 'mosaic']
-choice_weights = [0.5, 0.5, 0.0]
+choice_weights = [0.80, 0.20, 0.0]
 device = 'cuda:0'
 apex = False 
-pretrained_model = 'tf_efficientdet_d5'
+pretrained_model = 'tf_efficientdet_d6'
 model_name = f'{pretrained_model}_fold_{fold}'
 model_dir = 'model_dir'
 history_dir = 'history_dir'
-load_model = True
+load_model = False
 
 os.makedirs(model_dir, exist_ok=True)
 if load_model and os.path.exists(os.path.join(history_dir, 'history_{}.csv'.format(model_name))):
@@ -40,7 +43,7 @@ else:
     history = pd.DataFrame()
 
 imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-n_epochs = 40
+n_epochs = 60
 TTA = 1
 balanced_sampler = False
 pseudo_lo_thr = 0.1
@@ -107,12 +110,12 @@ df_folds.loc[:, 'stratify_group'] = np.char.add(
 
 df_folds.loc[:, 'fold'] = 0
 
-for fold_number, (train_index, val_index) in enumerate(skf.split(X=df_folds.index, y=df_folds['stratify_group'])):
-    df_folds.loc[df_folds.iloc[val_index].index, 'fold'] = fold_number
-train_df = df_folds[df_folds['fold'] != fold_number]
-val_df = df_folds[df_folds['fold'] == fold_number]
+for fold_num, (train_idx, val_idx) in enumerate(skf.split(X=df_folds.index, y=df_folds['stratify_group'])):
+    df_folds.loc[df_folds.iloc[val_idx].index, 'fold'] = fold_num
+train_df = df_folds[df_folds['fold'] != fold_num]
+val_df = df_folds[df_folds['fold'] == fold_num]
 device = "cuda:0"
-model = EffDet(pretrained_model).to(device)
+model = EffDet(pretrained_model, sz).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 lr_reduce_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=patience, verbose=True, threshold=1e-4, threshold_mode='rel', cooldown=0, min_lr=1e-7, eps=1e-08)
 train_dataset = WheatDataset(train_df.index.values, markings=marking, dim=1024, transforms=train_aug, opts= opts, choice_weights = choice_weights)

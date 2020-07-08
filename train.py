@@ -15,6 +15,7 @@ if load_model:
     tmp =  torch.load(f'{model_dir}/{model_name}.pth')
     model.load_state_dict(tmp['model_state_dict'])
     optimizer.load_state_dict(tmp['optimizer_state_dict'])
+    lr_reduce_scheduler.load_state_dict(tmp['lr_scheduler_state_dict'])
     start_epoch = tmp['Epoch'] + 1
     best_val_loss = tmp['best_loss']
     del tmp
