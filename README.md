@@ -5,6 +5,7 @@ My scripts for the [Global Wheat Detection](https://www.kaggle.com/c/global-whea
 ### Tasks
 - Add `IoU` metric and `IoU` loss.
 - Fix `Mosaic Augmentation`.
+- Add pseudo labelling feature.
 
 ### Might be useful
 - [End to End Object Detection with Transformers:DETR](https://www.kaggle.com/tanulsingh077/end-to-end-object-detection-with-transformers-detr)
