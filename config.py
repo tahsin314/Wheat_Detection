@@ -22,19 +22,19 @@ fold = 0
 SEED = 42
 batch_size = 2
 num_workers = 4
-sz = 768
-learning_rate = 1.5e-3
+sz = 512
+learning_rate = 1e-3
 patience = 4
 accum_step = 8 // batch_size
-opts = ['normal', 'cutmix', 'mosaic']
-choice_weights = [0.75, 0.25, 0.0]
+opts = ['normal', 'cutmix', 'mixup', 'mosaic']
+choice_weights = [0.50, 0.25, 0.25, 0.0]
 device = 'cuda:0'
 apex = True 
-pretrained_model = 'tf_efficientdet_d6'
+pretrained_model = 'tf_efficientdet_d5'
 model_name = f'{pretrained_model}_fold_{fold}'
 model_dir = 'model_dir'
 history_dir = 'history_dir'
-load_model = True
+load_model = False
 
 os.makedirs(model_dir, exist_ok=True)
 if load_model and os.path.exists(os.path.join(history_dir, 'history_{}.csv'.format(model_name))):
@@ -43,7 +43,7 @@ else:
     history = pd.DataFrame()
 
 imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-n_epochs = 60
+n_epochs = 80
 TTA = 1
 balanced_sampler = False
 pseudo_lo_thr = 0.1
@@ -64,8 +64,8 @@ train_aug = A.Compose(
             A.Resize(height=sz, width=sz, p=1),
             A.Cutout(num_holes=8, max_h_size=64, max_w_size=64, fill_value=0, p=0.5),
             RandomRain(slant_lower=-10, slant_upper=10, drop_length=20, drop_width=1, drop_color=(200, 200, 200), blur_value=7, brightness_coefficient=0.7, rain_type="drizzle", always_apply=False, p=0.1),
-            RandomSnow(snow_point_lower=0.1, snow_point_upper=0.3, brightness_coeff=1.5, always_apply=False, p=0.1),
-            RandomFog(fog_coef_lower=0.3, fog_coef_upper=1, alpha_coef=0.08, always_apply=False, p=0.1),
+            RandomSnow(snow_point_lower=0.1, snow_point_upper=0.3, brightness_coeff=1.5, always_apply=False, p=0.15),
+            RandomFog(fog_coef_lower=0.3, fog_coef_upper=0.61, alpha_coef=0.08, always_apply=False, p=0.15),
             ToTensorV2(p=1.0, always_apply=True),
         ], 
         p=1.0, 
@@ -112,8 +112,9 @@ df_folds.loc[:, 'fold'] = 0
 
 for fold_num, (train_idx, val_idx) in enumerate(skf.split(X=df_folds.index, y=df_folds['stratify_group'])):
     df_folds.loc[df_folds.iloc[val_idx].index, 'fold'] = fold_num
-train_df = df_folds[df_folds['fold'] != fold_num]
-val_df = df_folds[df_folds['fold'] == fold_num]
+
+train_df = df_folds[df_folds['fold'] != fold]
+val_df = df_folds[df_folds['fold'] == fold]
 device = "cuda:0"
 model = EffDet(pretrained_model, sz).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)

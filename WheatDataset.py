@@ -36,7 +36,8 @@ class WheatDataset(Dataset):
 
         elif self.choice[0] == 'cutmix':
             image, boxes = load_cutmix_image_and_boxes(TRAIN_ROOT_PATH, self.image_ids, idx, self.markings, self.dim)
-        
+        elif self.choice[0] == 'mixup':
+            image, boxes = load_mixup_image_and_boxes(TRAIN_ROOT_PATH, self.image_ids, idx, self.markings, self.dim)
         elif self.choice[0] == 'mosaic':
             image, boxes = load_mosaic_image_and_boxes(TRAIN_ROOT_PATH, self.image_ids, idx, self.markings)
             

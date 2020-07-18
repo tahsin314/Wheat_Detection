@@ -59,6 +59,12 @@ def load_cutmix_image_and_boxes(TRAIN_ROOT_PATH, image_ids, index, markings, ims
     result_boxes = result_boxes[np.where((result_boxes[:,2]-result_boxes[:,0])*(result_boxes[:,3]-result_boxes[:,1]) > 0)]
     return result_image, result_boxes
 
+def load_mixup_image_and_boxes(TRAIN_ROOT_PATH, image_ids, index, markings, imsize=1024):
+    image, boxes = load_image_and_boxes(TRAIN_ROOT_PATH, image_ids, index, markings)
+    beta = np.random.beta(0.5, 0.5)
+    r_image, r_boxes = load_image_and_boxes(TRAIN_ROOT_PATH, image_ids, random.randint(0, len(image_ids) - 1), markings)
+    return (image+r_image)/2, np.vstack((boxes, r_boxes)).astype(np.int32)
+
 
 def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10, border=0):
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
