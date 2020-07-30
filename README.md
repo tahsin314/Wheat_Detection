@@ -18,5 +18,6 @@ My scripts for the [Global Wheat Detection](https://www.kaggle.com/c/global-whea
 - Enter the `Wheat_Detection` folder and run `conda env create -f environment.yml`
 - Run `conda activate wheat`
 - Download Competition [data](https://www.kaggle.com/c/global-wheat-detection/data) and extract.
+- In `WheatDataset.py`, change `TRAIN_ROOT_PATH` to your image folder name.
 - In `config.py` edit `timm_efficientdet_path`, `omegaconf_path`, `data_dir` according to your paths. you can also change `batch_size`, `sz`(Image size), `accum_step` etc. parameters. 
 - Run `train.py` 
